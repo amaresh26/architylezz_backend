@@ -12,35 +12,39 @@ import contactFormRoutes from "./routes/contactFormRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import projectRoutes from "./routes/projectRoutes.js";
 import homeMetaRoutes from "./routes/homeMetaRoutes.js";
+import ownerRoutes from "./routes/ownerRoutes.js";
 
 const app = express();
 
-// ✅ Middleware
+// ✅ Middlewarea
 app.use(express.json());
 
 // ✅ Serve uploaded images & files
 app.use("/uploads", express.static("uploads"));
 
-
-// ✅ Allowed origins (comma-separated in .env)
+// ✅ Allowed origins (from .env or fallback)
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(",").map(origin => origin.trim())
-  : ["http://localhost:3000","https://architylez.vercel.app"]; // fallback for dev
-  
-// ✅ CORS setup
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        console.error(`❌ Blocked by CORS: ${origin}`);
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    credentials: true,
-  })
-);
+  : ["https://architylez.vercel.app"]; // production fallback
+
+// ✅ CORS setup for dev + prod
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests from localhost (any port) or 127.0.0.1
+    if (!origin || origin.startsWith("http://localhost:") || origin.startsWith("http://127.0.0.1:")) {
+      return callback(null, true);
+    }
+
+    // Allow production domains
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    console.error(`❌ Blocked by CORS: ${origin}`);
+    return callback(new Error("Not allowed by CORS"));
+  },
+  credentials: true,
+}));
 
 // ✅ Health check
 app.get("/", (req, res) => {
@@ -51,11 +55,11 @@ app.get("/", (req, res) => {
 app.use("/api/products", productRoutes);
 app.use("/api/catalogues", catalogueRoutes);  
 app.use("/api/projects", projectRoutes);
-
 app.use("/api/blogs", blogRoutes);
 app.use("/api/contact-forms", contactFormRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/home-meta", homeMetaRoutes);
+app.use("/api/owner", ownerRoutes);
 
 // ✅ Start Server
 const PORT = process.env.PORT || 5000;
