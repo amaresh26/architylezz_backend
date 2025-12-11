@@ -25,7 +25,7 @@ app.use("/uploads", express.static("uploads"));
 // ✅ Allowed origins (from .env or fallback)
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(",").map(origin => origin.trim())
-  : ["https://architylez.vercel.app"]; // production fallback
+  : ["https://architylezz.com"]; // production fallback
 
 // ✅ CORS setup for dev + prod
 app.use(cors({
